@@ -1,17 +1,32 @@
 import SearchableLayout from "@/components/searchable-layout"
 import { useRouter } from "next/router"
 import { ReactNode } from "react"
+import BookItem from "@/components/book-item"
+import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next"
+import fetchBooks from "@/lib/fetch-book"
 
-export default function Page(){
-    const router = useRouter()
+// SSR(서버 사이드 렌더링) 으로 반영
+export const getServerSideProps = async(context : GetServerSidePropsContext) => {
+    const q = context.query.q
+    const books = await fetchBooks(q as string)
 
-    const { q } = router.query
+    return {
+        props:{
+            books
+        }
+    }
+}
 
-    return(
-        <>
-            <h1>Search {q}</h1>
-        </>
-    )
+export default function Page({
+    books
+}: InferGetServerSidePropsType<typeof getServerSideProps>){
+   return (
+   <div>
+    {books.map((book)=>(
+        <BookItem key={book.id} {...book} />
+    ))}
+   </div>
+   )
 }
 
 Page.getLayout = (page: ReactNode) => {

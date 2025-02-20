@@ -1,13 +1,55 @@
 import SearchableLayout from "@/components/searchable-layout"
 import style from "./index.module.css"
-import { ReactNode } from "react"
+import { ReactNode, useEffect } from "react"
+import books from '@/mock/books.json'
+import BookItem from "@/components/book-item"
+import { InferGetServerSidePropsType } from "next"
+import fetchBooks from "@/lib/fetch-book"
+import fetchRandomBooks from "@/lib/fetch-random-books"
 
-export default function Home() {
+
+// SSR(서버 사이드 렌더링) 으로 반영
+// 컴포넌트보다 먼저 실행되어서, 컴포넌트에 필요한 데이터를 불러오는 함수
+// 사전 렌더링 시 1번만 서버에서 실행됨
+export const getServerSideProps= async() => {
+  // const allBooks = await fetchBooks()
+  // const recoBooks = await fetchRandomBooks()
+
+  // 위에 두가지 fetch 를 병렬로 하나로 합친 코드
+  const [allBooks, recoBooks] = await Promise.all([
+    fetchBooks(),
+    fetchRandomBooks()
+  ])
+
+  return {
+    // 객체를 반환해야함 (props로), 그래야 전달 가능
+    props: {
+      allBooks,
+      recoBooks
+    }
+  }
+}
+
+// 자동으로 타읍을 추론해주는 명령어
+export default function Home({ allBooks, recoBooks } : 
+  InferGetServerSidePropsType<typeof getServerSideProps>
+) {
+
   return (
-  <>
-    <h1 className={style.h1}>인덱스</h1>
-    <h2 className={style.h2}>H2</h2>
-  </>
+    <div className={style.container}>
+      <section>
+        <h3>지금 추천하는 도서</h3>
+          {recoBooks.map((book) =>(
+            <BookItem key={book.id} {...book} />
+          ))}
+        </section>
+      <section>
+        <h3>등록된 모든 도서</h3>
+        {allBooks.map((book) =>(
+            <BookItem key={book.id} {...book} />
+          ))}
+      </section>
+    </div>
   )
 }
 

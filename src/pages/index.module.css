@@ -1,7 +1,10 @@
-.h1 {
-    color: red
+.container {
+    display:flex;
+    /* 수직(세로)로 설정 */
+    flex-direction: column;
+    gap: 20px;
 }
 
-.h2 {
-    color: blue
+.container h3 {
+    margin-bottom: 0;
 }
