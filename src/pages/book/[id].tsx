@@ -1,6 +1,8 @@
-import { GetServerSidePropsContext, InferGetServerSidePropsType } from 'next'
+import { GetServerSidePropsContext, GetStaticPropsContext, InferGetServerSidePropsType, InferGetStaticPropsType } from 'next'
 import style from './[id].module.css'
 import fetchOneBook from '@/lib/fetch-one-book'
+import { useRouter } from 'next/router'
+import { notFound } from 'next/navigation'
 
 const mockData =   {
     "id": 1,
@@ -12,6 +14,42 @@ const mockData =   {
     "coverImgUrl": "https://shopping-phinf.pstatic.net/main_3888828/38888282618.20230913071643.jpg"
   }
 
+//   SSG 버전일 때 getStaticPaths 추가
+  export const getStaticPaths = () => {
+    return{
+        paths:[
+            {params:{id:"1"}},
+            {params:{id:"2"}},
+            {params:{id:"3"}},
+        ],
+        // 예외 상황에 대비하는 대비책, 보험 코드,
+        fallback:true
+    }
+  }
+
+//   SSG 버전
+  export const getStaticProps = async(
+    context: GetStaticPropsContext
+) => {
+    // context 의 id 값은 무조건 있을것이다 라고 확정적으로 선언
+    const id = context.params!.id
+    const book = await fetchOneBook(Number(id))
+
+    if(!book) {
+        return {
+            notFound:true
+        }
+    }
+    
+    return {
+        props:{
+            book
+        }
+    }
+}
+
+/*
+//  SSR 버전
 export const getServerSideProps = async(
     context: GetServerSidePropsContext
 ) => {
@@ -25,10 +63,17 @@ export const getServerSideProps = async(
         }
     }
 }
-
+*/
 export default function Page ({book}
-    :InferGetServerSidePropsType<typeof getServerSideProps>
+    // SSR 버전
+    // :InferGetServerSidePropsType<typeof getServerSideProps>
+    // SSG 버전
+    :InferGetStaticPropsType<typeof getStaticProps>
 ) {
+    const router = useRouter()
+
+    if(router.isFallback) return "로딩중입니다."
+    // SSG 일때
     if(!book) return "문제가 발생했습니다. 다시 시도하세요."
     
     const {
@@ -53,4 +98,30 @@ export default function Page ({book}
         <div className={style.author}>{author} | {publisher}</div>
         <div className={style.description}>{description}</div>
     </div>
+    // SSR 버전 start
+    // if(!book) return "문제가 발생했습니다. 다시 시도하세요."
+    
+    // const {
+    //     id,
+    //     title,
+    //     subTitle,
+    //     description,
+    //     author,
+    //     publisher,
+    //     coverImgUrl,
+    // } = book
+
+    // return <div className={style.container}>
+    //     <div
+    //     className={style.cover_img_container}
+    //         style={{backgroundImage:`url('${coverImgUrl}')`}}
+    //     >
+    //         <img src={coverImgUrl} />
+    //     </div>
+    //     <div className={style.title}>{title}</div>
+    //     <div className={style.subTitle}>{subTitle}</div>
+    //     <div className={style.author}>{author} | {publisher}</div>
+    //     <div className={style.description}>{description}</div>
+    // </div>
+    // SSR 버전
 }
