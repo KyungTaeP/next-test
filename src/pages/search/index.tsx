@@ -2,37 +2,10 @@ import SearchableLayout from "@/components/searchable-layout"
 import { useRouter } from "next/router"
 import { ReactNode, useEffect, useState } from "react"
 import BookItem from "@/components/book-item"
-import { GetServerSidePropsContext, GetStaticPropsContext, InferGetServerSidePropsType } from "next"
+import { GetServerSidePropsContext, GetStaticPropsContext,  } from "next"
 import fetchBooks from "@/lib/fetch-book"
 import { BookData } from "@/types"
-
-/*
-// SSR(서버 사이드 렌더링) 으로 반영
-export const getServerSideProps = async(context : GetServerSidePropsContext) => {
-    const q = context.query.q
-    const books = await fetchBooks(q as string)
-
-    return {
-        props:{
-            books
-        }
-    }
-}
-*/
-
-// 검색 결과를 서버로부터 불러오는 동작은 불가.
-// query 값을 불러 올 수없음
-// 단, function Page 안에 작성해서가능
-// export const getStaticProps = async(context : GetStaticPropsContext) => {
-//     const q = context.query.q
-//     const books = await fetchBooks(q as string)
-
-//     return {
-//         props:{
-//             books
-//         }
-//     }
-// }
+import Head from "next/head"
 
 // SSG 방식일 경우의 코드
 export default function Page(){
@@ -55,6 +28,22 @@ export default function Page(){
 
    return (
    <div>
+    <Head>
+    <title>한입북스 - 검색결과</title>
+      {/* content 의 / 는 public */}
+      <meta
+        property="og:image"
+        content="/thumbnail.png"
+      />
+      <meta
+        property="og:title"
+        content="한입북스 - 검색결과"
+      />
+      <meta
+        property="og:description"
+        content="한입 북스에 등록된 도서들을 만나보세요"
+      />
+    </Head>
     {books.map((book)=>(
         <BookItem key={book.id} {...book} />
     ))}
@@ -62,20 +51,6 @@ export default function Page(){
    )
 }
 
-/*
-// SSR 시 코드
-export default function Page({
-    books
-}: InferGetServerSidePropsType<typeof getServerSideProps>){
-   return (
-   <div>
-    {books.map((book)=>(
-        <BookItem key={book.id} {...book} />
-    ))}
-   </div>
-   )
-}
-*/
 Page.getLayout = (page: ReactNode) => {
     return <SearchableLayout>{page}</SearchableLayout>
 }
