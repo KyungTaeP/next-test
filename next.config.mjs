@@ -1,7 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // 실습을 위해 false 설정
-  reactStrictMode: false,
+  logging: {
+    fetches: {
+      fullUrl: true,
+    },
+  },
+  images: {
+    domains: ["shopping-phinf.pstatic.net"],
+  },
 };
 
 export default nextConfig;
